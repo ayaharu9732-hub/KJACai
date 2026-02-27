@@ -1,7 +1,6 @@
-HEAD
+﻿HEAD
 ﻿# =========================
 # KJACai ignore settings
-# =========================
 
 # ---- outputs (生成物) ----
 output/
@@ -32,38 +31,59 @@ Thumbs.db
 .idea/src/GPTsupo-tu.txt
 
 ﻿# python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.egg-info/
-.venv/
+﻿# ---- Python / venv ----
 
-# windows
+# ---- OS / editor ----
 desktop.ini
-Thumbs.db
 
-# local heavy
-output/
+# ---- outputs / temp ----
 outputs/
-videos/
+reports/
+runs/
+captures/
 frames*/
+frames/
+frames_raw/
+frames_overlay/
 keypoints_json/
 kp_final/
-models/
-AlphaPose/
-captures/
-runs/
+debug_*/
+debug_*.png
+debug_*.jpg
 
-# temp / test media
+# ---- media ----
 *.mp4
 *.avi
+*.mov
 *.png
 *.jpg
 *.jpeg
+*.webp
 *.pdf
 
 # backups
 *.bak*
  0d977af (baseline: track src + scripts (ignore heavy outputs))
 src/GPTsupo-tu.txt
+# ---- models / heavy ----
+yolov8n-pose_openvino_model/
+AlphaPose/
+*.task
+
+# ---- data (必要なら後で外す) ----
+data/
+
+# ---- local env folders (あなたの例) ----
+footenv/
+footenv39/
+mp_env/
+project_root/
+# --- Python ---
+# --- Secrets ---
+.env.*
+# --- Logs ---
+*.log
+error.log
+# --- Outputs / heavy ---
+# --- External repos / vendor ---
+# --- ML weights ---
