@@ -1,3 +1,4 @@
+HEAD
 ﻿# =========================
 # KJACai ignore settings
 # =========================
@@ -29,3 +30,40 @@ Thumbs.db
 # ---- editor ----
 .vscode/
 .idea/src/GPTsupo-tu.txt
+
+﻿# python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.venv/
+
+# windows
+desktop.ini
+Thumbs.db
+
+# local heavy
+output/
+outputs/
+videos/
+frames*/
+keypoints_json/
+kp_final/
+models/
+AlphaPose/
+captures/
+runs/
+
+# temp / test media
+*.mp4
+*.avi
+*.png
+*.jpg
+*.jpeg
+*.pdf
+
+# backups
+*.bak*
+ 0d977af (baseline: track src + scripts (ignore heavy outputs))
+src/GPTsupo-tu.txt
