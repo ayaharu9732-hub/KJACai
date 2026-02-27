@@ -87,3 +87,7 @@ error.log
 # --- Outputs / heavy ---
 # --- External repos / vendor ---
 # --- ML weights ---
+
+# local scratch / experiments
+/sandbox/
+
