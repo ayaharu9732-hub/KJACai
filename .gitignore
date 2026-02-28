@@ -1,4 +1,4 @@
-﻿HEAD
+﻿﻿HEAD
 ﻿# =========================
 # KJACai ignore settings
 
@@ -91,3 +91,4 @@ error.log
 # local scratch / experiments
 /sandbox/
 
+.idea/
