@@ -1,0 +1,31 @@
+﻿# =========================
+# KJACai ignore settings
+# =========================
+
+# ---- outputs (生成物) ----
+output/
+artifacts/
+logs/
+
+# ---- AI models ----
+models/
+*.pt
+*.pth
+*.onnx
+
+# ---- sandbox / experimental ----
+sandbox/
+
+# ---- python ----
+__pycache__/
+*.pyc
+.venv/
+.env
+
+# ---- OS ----
+.DS_Store
+Thumbs.db
+
+# ---- editor ----
+.vscode/
+.idea/src/GPTsupo-tu.txt

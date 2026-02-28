@@ -1,0 +1,36 @@
+# config.yaml
+
+# 出力ディレクトリ
+output_dir: outputs
+
+# デフォルトの動画選択ダイアログの初期ディレクトリ
+pick_default_dir: "videos"
+
+# 日本語フォントのパス
+# IPAexGothic が Windows にインストールされていない場合は
+# "C:/Windows/Fonts/msgothic.ttc" などに変更してください
+font_path: "ipaexg.ttf"
+
+# 解析ステップ間隔（秒）
+step_sec: 0.1
+
+# 開始時間（秒）
+start_sec: 0.0
+
+# 動作開始を自動検知するか
+auto_trim: false
+auto_trim_threshold_px_s: 80.0
+
+# MediaPipe を使用して体幹角度を算出するか
+use_mediapipe: false
+
+# AIサマリー生成を有効にするか
+use_ai: true
+
+# OpenAI API モデル
+openai_model: "gpt-4o-mini"
+
+# AI出力の温度パラメータ
+ai_temperature: 0.5
+
+

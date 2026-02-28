@@ -1,0 +1,217 @@
+# tests/run_loop.Tests.ps1
+
+$RepoRoot = Resolve-Path (Join-Path $PSScriptRoot '..') | Select-Object -ExpandProperty Path
+$ScriptUnderTest = Join-Path $RepoRoot 'sandbox\run_loop.ps1'
+
+Describe 'sandbox/run_loop.ps1' {
+    BeforeAll {
+        # Path が null じゃないことを保証
+        if (-not (Test-Path $ScriptUnderTest)) {
+            throw "Script not found: $ScriptUnderTest"
+        }
+    }
+
+    It 'has expected parameters' {
+        $cmd = Get-Command $ScriptUnderTest
+        $cmd.Parameters.Keys | Should -Contain 'Preset'
+    }
+
+    # …既存テスト続き…
+}#requires -Version 5.1
+# Pester v5+
+# Run: pwsh -NoProfile -Command "Invoke-Pester -Path .\tests -Output Detailed"
+
+Set-StrictMode -Version Latest
+
+$here = Split-Path -Parent $MyInvocation.MyCommand.Path
+$repo = Resolve-Path (Join-Path $here "..")
+$SUT  = Join-Path $repo "sandbox\run_loop.ps1"
+
+Describe "sandbox/run_loop.ps1" {
+
+  BeforeAll {
+    if (-not (Test-Path $SUT)) { throw "SUT not found: $SUT" }
+
+    # テスト用の一時領域
+    $global:TestRoot = Join-Path $env:TEMP ("kjac_runloop_tests_" + [guid]::NewGuid().ToString("N"))
+    New-Item -ItemType Directory -Force -Path $global:TestRoot | Out-Null
+  }
+
+  AfterAll {
+    if (Test-Path $global:TestRoot) {
+      Remove-Item -Recurse -Force $global:TestRoot -ErrorAction SilentlyContinue
+    }
+  }
+
+  function New-FakeRunLog {
+    param(
+      [Parameter(Mandatory)] [string] $RunDir,
+      [int] $FpsFrames = 36602,
+      [double] $Fps = 59.94005994005994,
+      [int] $Sorted = 720,
+      [int] $AfterResolve = 623,
+      [int] $AfterMin = 623,
+      [int] $AfterSameFoot = 623,
+      [int] $NearMerged = 42,
+      [int] $MinStepDrops = 0,
+      [string] $MinStepHist = "1:0 2:0 3:0 4:0 5:0 6:0 7:0 8:0 9:0 10:0"
+    )
+
+    New-Item -ItemType Directory -Force -Path $RunDir | Out-Null
+
+    $logPath = Join-Path $RunDir "run.log"
+    @(
+      "[INFO] Resolution=1920x1080, FPS=$Fps, Frames=$FpsFrames"
+      "[DBG] stage=sorted_events_raw n=$Sorted"
+      "[DBG] stage=after_resolve_same_frame n=$AfterResolve"
+      "[DBG] stage=after_min_step_interval n=$AfterMin"
+      "[DBG] stage=after_same_foot_min_step_interval n=$AfterSameFoot"
+      "[DBG] near_resolve: merged_count=$NearMerged"
+      "[DBG] min_step_dropped_total=$MinStepDrops"
+      "[DBG] min_step_delta_frames_hist_1to10: $MinStepHist"
+      "[DONE] Saved overlay: overlay.avi (frames_written=$FpsFrames)"
+    ) | Set-Content -Encoding utf8 $logPath
+
+    return $logPath
+  }
+
+  Context "dev preset behavior" {
+
+    It "calls run_dbg.ps1 when Preset=dev and creates summary.txt" {
+      # Arrange
+      $video = Join-Path $global:TestRoot "dummy.mp4"
+      $yolo  = Join-Path $global:TestRoot "dummy.pt"
+      Set-Content -Encoding ascii $video "x"   # ダミー
+      Set-Content -Encoding ascii $yolo  "x"
+
+      # run_loop が runs を作る場所に合わせて、sandbox/runs をテスト用に作る
+      $runsRoot = Join-Path $repo "sandbox\runs"
+      New-Item -ItemType Directory -Force -Path $runsRoot | Out-Null
+
+      # モック：run_dbg.ps1 が成功し、run.log を作った体にする
+      # ※ run_loop.ps1 が run_id ディレクトリを作ってから run_dbg.ps1 を呼ぶ設計を想定
+      #    run_dbg.ps1 側で $logPath に Tee しているなら、run_loop の方で参照する run.log が出来るようにする
+      Mock -CommandName powershell -MockWith {
+        param([Parameter(ValueFromRemainingArguments=$true)] $Args)
+
+        # Args 内に "run_dbg.ps1" が含まれる想定でチェック
+        ($Args -join " ") | Should -Match "run_dbg\.ps1"
+
+        # run_loop が作った最新の runs/* を探して run.log を生成
+        $latest = Get-ChildItem -Directory $runsRoot | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+        $null = New-FakeRunLog -RunDir $latest.FullName -NearMerged 42 -MinStepDrops 0
+        return $true
+      }
+
+      # Act
+      & $SUT -Preset dev -Video $video -Yolo $yolo -MaxFrames 200 -ExtraArgs @("--debug_events") | Out-Null
+
+      # Assert: runs 配下に summary.txt が出来ている
+      $summaries = Get-ChildItem -Path $runsRoot -Recurse -Filter "summary.txt" -ErrorAction SilentlyContinue
+      $summaries.Count | Should -BeGreaterThan 0
+
+      $content = Get-Content -Raw -Encoding utf8 $summaries[0].FullName
+      $content | Should -Match "FPS"
+      $content | Should -Match "Frames"
+      $content | Should -Match "sorted_events_raw"
+      $content | Should -Match "after_resolve_same_frame"
+      $content | Should -Match "near_resolve"
+      $content | Should -Match "min_step"
+    }
+
+    It "stops when dev run fails (does not call prod)" {
+      # Arrange
+      $video = Join-Path $global:TestRoot "dummy2.mp4"
+      $yolo  = Join-Path $global:TestRoot "dummy2.pt"
+      Set-Content -Encoding ascii $video "x"
+      Set-Content -Encoding ascii $yolo  "x"
+
+      $runsRoot = Join-Path $repo "sandbox\runs"
+      New-Item -ItemType Directory -Force -Path $runsRoot | Out-Null
+
+      $calledProd = $false
+
+      Mock -CommandName powershell -MockWith {
+        param([Parameter(ValueFromRemainingArguments=$true)] $Args)
+        $cmd = ($Args -join " ")
+
+        if ($cmd -match "run_prod\.ps1") { $script:calledProd = $true }
+
+        if ($cmd -match "run_dbg\.ps1") {
+          # dev を失敗させる（exit code を想定した挙動に寄せたいなら throw でもOK）
+          throw "dev failed"
+        }
+      }
+
+      # Act / Assert
+      { & $SUT -Preset dev -Video $video -Yolo $yolo -MaxFrames 200 } | Should -Throw
+
+      # prod が呼ばれていないこと
+      $calledProd | Should -BeFalse
+    }
+
+    It "clamps MaxIters to 3" {
+      # Arrange
+      $video = Join-Path $global:TestRoot "dummy3.mp4"
+      $yolo  = Join-Path $global:TestRoot "dummy3.pt"
+      Set-Content -Encoding ascii $video "x"
+      Set-Content -Encoding ascii $yolo  "x"
+
+      $runsRoot = Join-Path $repo "sandbox\runs"
+      New-Item -ItemType Directory -Force -Path $runsRoot | Out-Null
+
+      $dbgCount = 0
+
+      Mock -CommandName powershell -MockWith {
+        param([Parameter(ValueFromRemainingArguments=$true)] $Args)
+        $cmd = ($Args -join " ")
+        if ($cmd -match "run_dbg\.ps1") {
+          $dbgCount++
+          $latest = Get-ChildItem -Directory $runsRoot | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          $null = New-FakeRunLog -RunDir $latest.FullName
+          return $true
+        }
+        return $true
+      }
+
+      # Act
+      # MaxIters 99 でも 3 回までしか dev 反復しない前提
+      & $SUT -Preset dev -Video $video -Yolo $yolo -MaxIters 99 -MaxFrames 200 | Out-Null
+
+      # Assert
+      $dbgCount | Should -BeLessOrEqual 3
+    }
+  }
+
+  Context "prod preset behavior" {
+    It "calls run_prod.ps1 when Preset=prod" {
+      # Arrange
+      $video = Join-Path $global:TestRoot "dummy4.mp4"
+      $yolo  = Join-Path $global:TestRoot "dummy4.pt"
+      Set-Content -Encoding ascii $video "x"
+      Set-Content -Encoding ascii $yolo  "x"
+
+      $runsRoot = Join-Path $repo "sandbox\runs"
+      New-Item -ItemType Directory -Force -Path $runsRoot | Out-Null
+
+      $calledProd = $false
+
+      Mock -CommandName powershell -MockWith {
+        param([Parameter(ValueFromRemainingArguments=$true)] $Args)
+        $cmd = ($Args -join " ")
+        if ($cmd -match "run_prod\.ps1") {
+          $script:calledProd = $true
+          $latest = Get-ChildItem -Directory $runsRoot | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          $null = New-FakeRunLog -RunDir $latest.FullName
+        }
+        return $true
+      }
+
+      # Act
+      & $SUT -Preset prod -Video $video -Yolo $yolo | Out-Null
+
+      # Assert
+      $calledProd | Should -BeTrue
+    }
+  }
+}
