@@ -96,3 +96,22 @@ error.log
 .env.*
 **/.env
 **/.env.*
+# Python caches
+__pycache__/
+*.pyc
+
+# outputs / logs
+output/
+outputs/
+logs/
+*.log
+
+# models / weights
+models/
+*.pt
+*.onnx
+
+# local notebooks / temp
+.ipynb_checkpoints/
+temp/
+tmp/
