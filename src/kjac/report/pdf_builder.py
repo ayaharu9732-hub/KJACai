@@ -19,7 +19,7 @@ def build_report(metrics_csv: str | Path, output_pdf: str | Path) -> Path:
     c = canvas.Canvas(str(out_path), pagesize=PAGE_SIZE)
     draw_page_1(c, data_rows, stats, summary, font_name)
     draw_page_2(c, data_rows, font_name)
-    draw_page_3(c, stats, font_name)
+    draw_page_3(c, stats, data_rows, font_name)
     draw_page_4(c, stats, font_name)
     c.save()
     return out_path

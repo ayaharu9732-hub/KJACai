@@ -107,7 +107,7 @@ def draw_page_2(c, rows: list[dict[str, str]], font_name: str) -> None:
     c.showPage()
 
 
-def draw_page_3(c, stats: dict[str, float], font_name: str) -> None:
+def draw_page_3(c, stats: dict[str, float], data_rows: list[dict[str, str]], font_name: str) -> None:
     y = draw_title(c, "3. Section Evaluation + Positive Summary", font_name)
 
     pitch = stats.get("pitch_hz", math.nan)
@@ -140,6 +140,35 @@ def draw_page_3(c, stats: dict[str, float], font_name: str) -> None:
         "- リズムとストライドの形がそろってきており、良い走りの土台ができています。",
         "- 加速中の姿勢をこのまま意識すると、さらに安定して伸びていけます。",
     ]
+    eval_lines += ["", "区間別評価："]
+
+    section_speeds: list[tuple[str, float]] = []
+    for row in data_rows:
+        section = (row.get("section", "") or "").strip()
+        row_speed = _to_float(row.get("avg_speed_mps"))
+        if section and not math.isnan(row_speed):
+            section_speeds.append((section, row_speed))
+
+    max_speed = max((s for _, s in section_speeds), default=math.nan)
+    eps = 1e-9
+    section_rows = [r for r in data_rows if (r.get("section", "") or "").strip()]
+    for row in section_rows:
+        section = (row.get("section", "") or "").strip()
+        row_speed = _to_float(row.get("avg_speed_mps"))
+        if math.isnan(row_speed) or math.isnan(max_speed):
+            speed_text = "N/A"
+            rating = "—"
+        elif abs(row_speed - max_speed) <= eps:
+            speed_text = f"{row_speed:.2f}"
+            rating = "◎"
+        elif row_speed >= 0.95 * max_speed:
+            speed_text = f"{row_speed:.2f}"
+            rating = "○"
+        else:
+            speed_text = f"{row_speed:.2f}"
+            rating = "△"
+        eval_lines.append(f"- {section}：平均速度 {speed_text} m/s ／ 評価 {rating}")
+
     draw_lines(c, eval_lines, y, font_name, size=11)
     c.showPage()
 
