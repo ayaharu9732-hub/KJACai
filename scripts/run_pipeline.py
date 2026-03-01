@@ -11,7 +11,11 @@ import sys
 import shlex
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(Path(__file__).resolve().parents[1]) not in sys.path:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from src.kjac.runtime_paths import REPO_ROOT
+
 DEFAULT_IMPL = REPO_ROOT / "scripts" / "kjac_pipeline_v1_3.py"
 
 def main() -> int:

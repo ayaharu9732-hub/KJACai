@@ -5,8 +5,12 @@ import sys
 import shlex
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_IMPL = ROOT / "scripts" / "pose_reporter_pdf_ai_v5_5_3_gpt_all_final.py"
+if str(Path(__file__).resolve().parents[1]) not in sys.path:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from src.kjac.runtime_paths import REPO_ROOT
+
+DEFAULT_IMPL = REPO_ROOT / "scripts" / "pose_reporter_pdf_ai_v5_5_3_gpt_all_final.py"
 
 def main() -> int:
     ap = argparse.ArgumentParser()
