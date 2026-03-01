@@ -1,13 +1,21 @@
 from __future__ import annotations
+"""
+Canonical KJAC pipeline CLI entrypoint.
+
+Use this wrapper as the official way to run the pipeline.
+Legacy implementation scripts remain available for compatibility.
+"""
 import argparse
 import subprocess
 import sys
+import shlex
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_IMPL = ROOT / "scripts" / "kjac_pipeline_v1_3.py"
+REPO_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_IMPL = REPO_ROOT / "scripts" / "kjac_pipeline_v1_3.py"
 
 def main() -> int:
+    print("[KJAC PIPELINE] canonical entrypoint")
     ap = argparse.ArgumentParser()
     ap.add_argument("mode", nargs="?", default="all", help="pipeline mode (e.g. all)")
     ap.add_argument("--impl", default=str(DEFAULT_IMPL), help="pipeline implementation script path")
@@ -21,7 +29,7 @@ def main() -> int:
 
     cmd = [sys.executable, str(impl), "pipeline", ns.mode]
     if ns.args.strip():
-        cmd += ns.args.strip().split(" ")
+        cmd += shlex.split(ns.args)
 
     print("[RUN]", " ".join(cmd))
     return subprocess.call(cmd)

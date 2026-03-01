@@ -2,6 +2,7 @@ from __future__ import annotations
 import argparse
 import subprocess
 import sys
+import shlex
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,7 +21,7 @@ def main() -> int:
 
     cmd = [sys.executable, str(impl)]
     if ns.args.strip():
-        cmd += ns.args.strip().split(" ")
+        cmd += shlex.split(ns.args)
 
     print("[RUN]", " ".join(cmd))
     return subprocess.call(cmd)
