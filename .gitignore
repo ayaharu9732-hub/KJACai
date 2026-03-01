@@ -92,3 +92,7 @@ error.log
 /sandbox/
 
 .idea/
+.env
+.env.*
+**/.env
+**/.env.*
