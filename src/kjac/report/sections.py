@@ -143,6 +143,12 @@ def draw_page_3(c, stats: dict[str, float], data_rows: list[dict[str, str]], fon
         "区間別評価：",
     ]
     y = draw_lines(c, eval_lines, y, font_name, size=11)
+    legend_lines = [
+        "凡例：◎ = 区間内で最速（最大速度）",
+        "　　　○ = 最大速度の95%以上",
+        "　　　△ = それ以外",
+    ]
+    y = draw_lines(c, legend_lines, y, font_name, size=10, line_h=5.0 * mm)
 
     section_speeds: list[tuple[str, float]] = []
     for row in data_rows:
