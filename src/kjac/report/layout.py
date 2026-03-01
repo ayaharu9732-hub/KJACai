@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Iterable
 
 from reportlab.lib import colors
+from reportlab.lib.colors import Color
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
@@ -51,7 +52,14 @@ def draw_lines(c, lines: Iterable[str], y: float, font_name: str, size: int = 11
     return y
 
 
-def draw_table(c, data: list[list[str]], y: float, font_name: str, col_widths: list[float] | None = None) -> float:
+def draw_table(
+    c,
+    data: list[list[str]],
+    y: float,
+    font_name: str,
+    col_widths: list[float] | None = None,
+    cell_bg_map: dict[tuple[int, int], Color] | None = None,
+) -> float:
     if not data:
         return y
     width, _ = PAGE_SIZE
@@ -59,18 +67,18 @@ def draw_table(c, data: list[list[str]], y: float, font_name: str, col_widths: l
         per_col = (width - (LEFT_MARGIN * 2)) / max(1, len(data[0]))
         col_widths = [per_col] * len(data[0])
     table = Table(data, colWidths=col_widths, repeatRows=1)
-    table.setStyle(
-        TableStyle(
-            [
-                ("FONTNAME", (0, 0), (-1, -1), font_name),
-                ("FONTSIZE", (0, 0), (-1, -1), 10),
-                ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
-                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-                ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ]
-        )
-    )
+    style_cmds: list[tuple] = [
+        ("FONTNAME", (0, 0), (-1, -1), font_name),
+        ("FONTSIZE", (0, 0), (-1, -1), 10),
+        ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+    ]
+    if cell_bg_map:
+        for (row_idx, col_idx), bg in cell_bg_map.items():
+            style_cmds.append(("BACKGROUND", (col_idx, row_idx), (col_idx, row_idx), bg))
+    table.setStyle(TableStyle(style_cmds))
     tw, th = table.wrapOn(c, width - (LEFT_MARGIN * 2), y)
     table.drawOn(c, LEFT_MARGIN, y - th)
     return y - th - 4 * mm

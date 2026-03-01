@@ -5,6 +5,7 @@ import math
 from pathlib import Path
 from typing import Any
 
+from reportlab.lib import colors
 from reportlab.lib.units import mm
 
 from src.kjac.report.layout import draw_lines, draw_table, draw_title
@@ -162,24 +163,30 @@ def draw_page_3(c, stats: dict[str, float], data_rows: list[dict[str, str]], fon
     section_rows = [r for r in data_rows if (r.get("section", "") or "").strip()]
 
     table_data = [["区間", "平均速度(m/s)", "評価"]]
+    cell_bg_map: dict[tuple[int, int], colors.Color] = {}
     for row in section_rows:
         section = (row.get("section", "") or "").strip()
         row_speed = _to_float(row.get("avg_speed_mps"))
         if math.isnan(row_speed) or math.isnan(max_speed):
             speed_text = "N/A"
             rating = "—"
+            bg = colors.whitesmoke
         elif abs(row_speed - max_speed) <= eps:
             speed_text = f"{row_speed:.2f}"
             rating = "◎"
+            bg = colors.lightgreen
         elif row_speed >= 0.95 * max_speed:
             speed_text = f"{row_speed:.2f}"
             rating = "○"
+            bg = colors.whitesmoke
         else:
             speed_text = f"{row_speed:.2f}"
             rating = "△"
+            bg = colors.mistyrose
         table_data.append([section, speed_text, rating])
+        cell_bg_map[(len(table_data) - 1, 2)] = bg
 
-    y = draw_table(c, table_data, y, font_name, col_widths=[70 * mm, 80 * mm, 50 * mm])
+    y = draw_table(c, table_data, y, font_name, col_widths=[70 * mm, 80 * mm, 50 * mm], cell_bg_map=cell_bg_map)
     c.showPage()
 
 
