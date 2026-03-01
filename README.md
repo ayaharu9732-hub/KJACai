@@ -1,70 +1,56 @@
 ﻿# KJACai
 
-KJACai is an athletics performance analysis and reporting system for sprint and relay athletes.
-
-It provides video analysis pipelines, metric extraction, AI-assisted reporting, and GUI tools used in the KJAC AI project.
+KJACai is an athletics performance analysis and reporting system (sprint / relay).
+This repository contains canonical entrypoints, reporting tools, and (optional) GUI utilities.
 
 ---
 
-## 🚀 Canonical Entry Points
+## ✅ Canonical entrypoints
 
-### Pipeline (MAIN ENTRYPOINT)
-
-Run the full analysis pipeline:
-
+### Pipeline (canonical)
 ```bash
 python scripts/run_pipeline.py
 
-This is the official execution path for analysis.
+Note: The current legacy pipeline implementation (scripts/kjac_pipeline_v1_3.py) expects MP4 videos under videos/.
+If videos/ has no MP4 files, it will stop with: “videos フォルダに MP4 が見つかりません。”
 
-Report Generation
+Run with extra args (quoted paths supported):
 
-Generate a report from existing metrics:
+python scripts/run_pipeline.py all --args "--csv videos/race_PLUS.csv --out output/pipeline.pdf"
+Report (canonical)
+python scripts/run_report.py --args "--help"
+🧪 Local checks
 
-python scripts/run_report.py
-📁 Project Structure
-src/        Core analysis logic
-scripts/    CLI entrypoints and utilities
-videos/     Input videos
-outputs/    Generated analysis results
-sandbox/    Experimental / legacy scripts
-⚙️ Requirements
-
-Install dependencies:
-
-pip install -r requirements.txt
-✅ Development Check
-
-Run repository validation:
+Run compile checks:
 
 powershell -ExecutionPolicy Bypass -File scripts/check.ps1
-🤖 CI
+📦 Requirements (split “extras”)
 
-GitHub Actions automatically runs checks on push and pull requests.
+Install minimal (CI / light):
 
-📌 Status
+pip install -r requirements/base.txt
 
-Active development — canonical pipeline structure established.
+AI features:
+
+pip install -r requirements/ai.txt
+
+GUI features:
+
+pip install -r requirements/gui.txt
+
+Full install:
+
+pip install -r requirements/full.txt
+🤖 Codex workflow
+
+See CODEX.md for the canonical “paste-and-loop” workflow.
 
 
----
-
-# ✅ これを書く理由（超重要）
-
-実は今あなたの repo はもう：
-
-✅ Codex運用可能  
-✅ CI動作  
-✅ canonical entrypoint確立  
-✅ runtime_paths統一  
-
-＝ **個人スクリプト → 開発プロジェクト化 完了**
-
-README はその「宣言書」です。
-
----
-
-# ✅ 次にやる（30秒）
+## 3) commit & push
+README保存したら：
 
 ```powershell
-notepad README.md
+cd C:\Users\Futamura\KJACai
+git add README.md
+git commit -m "docs: add README with canonical usage"
+git push
