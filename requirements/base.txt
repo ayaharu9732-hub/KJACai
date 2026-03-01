@@ -1,0 +1,9 @@
+﻿numpy
+pandas
+matplotlib
+PyYAML
+Pillow
+reportlab
+fpdf2
+pypdf
+japanize-matplotlib

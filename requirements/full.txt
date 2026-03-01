@@ -1,0 +1,6 @@
+﻿-r base.txt
+-r ai.txt
+-r gui.txt
+opencv-python
+ultralytics
+mediapipe
