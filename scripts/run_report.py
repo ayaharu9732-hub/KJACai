@@ -1,34 +1,27 @@
 from __future__ import annotations
 import argparse
-import subprocess
 import sys
-import shlex
 from pathlib import Path
 
 if str(Path(__file__).resolve().parents[1]) not in sys.path:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from src.kjac.runtime_paths import REPO_ROOT
-
-DEFAULT_IMPL = REPO_ROOT / "scripts" / "pose_reporter_pdf_ai_v5_5_3_gpt_all_final.py"
+from src.kjac.report.pdf_builder import build_report
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--impl", default=str(DEFAULT_IMPL))
-    ap.add_argument("--args", default="", help="extra args passed to impl (as a single string)")
+    ap.add_argument("metrics_csv", help="input metrics CSV path")
+    ap.add_argument("--out", default="report.pdf", help="output PDF path")
     ns = ap.parse_args()
 
-    impl = Path(ns.impl)
-    if not impl.exists():
-        print(f"[ERR] impl not found: {impl}", file=sys.stderr)
+    csv_path = Path(ns.metrics_csv)
+    if not csv_path.exists():
+        print(f"[ERR] metrics csv not found: {csv_path}", file=sys.stderr)
         return 2
 
-    cmd = [sys.executable, str(impl)]
-    if ns.args.strip():
-        cmd += shlex.split(ns.args)
-
-    print("[RUN]", " ".join(cmd))
-    return subprocess.call(cmd)
+    out_path = build_report(csv_path, ns.out)
+    print("[DONE]", out_path)
+    return 0
 
 if __name__ == "__main__":
     raise SystemExit(main())
