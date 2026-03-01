@@ -7,7 +7,7 @@ from typing import Any
 
 from reportlab.lib.units import mm
 
-from src.kjac.report.layout import LEFT_MARGIN, PAGE_SIZE, draw_lines, draw_table, draw_title
+from src.kjac.report.layout import draw_lines, draw_table, draw_title
 
 
 def _to_float(value: Any) -> float:
@@ -139,8 +139,10 @@ def draw_page_3(c, stats: dict[str, float], data_rows: list[dict[str, str]], fon
         f"- 現在の平均スピードは {_fmt(speed, 'm/s')} です。",
         "- リズムとストライドの形がそろってきており、良い走りの土台ができています。",
         "- 加速中の姿勢をこのまま意識すると、さらに安定して伸びていけます。",
+        "",
+        "区間別評価：",
     ]
-    eval_lines += ["", "区間別評価："]
+    y = draw_lines(c, eval_lines, y, font_name, size=11)
 
     section_speeds: list[tuple[str, float]] = []
     for row in data_rows:
@@ -152,6 +154,8 @@ def draw_page_3(c, stats: dict[str, float], data_rows: list[dict[str, str]], fon
     max_speed = max((s for _, s in section_speeds), default=math.nan)
     eps = 1e-9
     section_rows = [r for r in data_rows if (r.get("section", "") or "").strip()]
+
+    table_data = [["区間", "平均速度(m/s)", "評価"]]
     for row in section_rows:
         section = (row.get("section", "") or "").strip()
         row_speed = _to_float(row.get("avg_speed_mps"))
@@ -167,9 +171,9 @@ def draw_page_3(c, stats: dict[str, float], data_rows: list[dict[str, str]], fon
         else:
             speed_text = f"{row_speed:.2f}"
             rating = "△"
-        eval_lines.append(f"- {section}：平均速度 {speed_text} m/s ／ 評価 {rating}")
+        table_data.append([section, speed_text, rating])
 
-    draw_lines(c, eval_lines, y, font_name, size=11)
+    y = draw_table(c, table_data, y, font_name, col_widths=[70 * mm, 80 * mm, 50 * mm])
     c.showPage()
 
 
