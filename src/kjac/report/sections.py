@@ -210,13 +210,15 @@ def draw_page_5(c, stats: dict[str, float], data_rows: list[dict[str, str]], fon
 
     pitch = stats.get("pitch_hz", math.nan)
     stride = stats.get("stride_m", math.nan)
+    added_any = False
 
     lines: list[str] = [
-        f"現在の目安：ピッチ {_fmt(pitch)} / ストライド {_fmt(stride, 'm')}",
+        f"現在の目安：ピッチ {_fmt(pitch, 'steps/s')} / ストライド {_fmt(stride, 'm')}",
         "",
     ]
 
     if not math.isnan(pitch) and pitch < 3.8:
+        added_any = True
         lines += [
             "【回転（ピッチ）を上げる】",
             "- 20m加速走 × 6本（休息2〜3分、全力の85〜90%）",
@@ -226,6 +228,7 @@ def draw_page_5(c, stats: dict[str, float], data_rows: list[dict[str, str]], fon
         ]
 
     if not math.isnan(stride) and stride < 1.45:
+        added_any = True
         lines += [
             "【押し出し（ストライド）】",
             "- 坂ダッシュ 15m × 6本（休息2〜3分、前傾を保つ）",
@@ -251,6 +254,7 @@ def draw_page_5(c, stats: dict[str, float], data_rows: list[dict[str, str]], fon
         if last_candidates:
             last_sec, last_speed = last_candidates[-1]
             if max_speed > 0 and (last_speed / max_speed) < 0.93:
+                added_any = True
                 lines += [
                     "【終盤の維持】",
                     f"- 対象区間: {last_sec}（終盤）",
@@ -259,6 +263,15 @@ def draw_page_5(c, stats: dict[str, float], data_rows: list[dict[str, str]], fon
                     "- 合言葉：『肩を上げない、接地を真下に』",
                     "",
                 ]
+
+    if not added_any:
+        lines += [
+            "【維持と仕上げ（今の形を強みにする）】",
+            "- 30m加速走 × 4本（休息3分、フォームをそろえる）",
+            "- 60m流し × 3本（力み0、リズム重視）",
+            "- 合言葉：『姿勢を高く、リズム一定』",
+            "",
+        ]
 
     lines += [
         "【週の例（週2〜3回走練＋補強）】",
