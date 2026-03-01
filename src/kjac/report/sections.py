@@ -71,7 +71,7 @@ def draw_page_1(
     summary: dict[str, str] | None,
     font_name: str,
 ) -> None:
-    y = draw_title(c, "1. Competition Summary + Pitch/Stride", font_name)
+    y = draw_title(c, "1. 大会情報とピッチ／ストライド概要", font_name)
     info_table = [
         ["Meet / Competition name", _pick_first(summary, ["meet_name", "competition", "meet", "大会名"])],
         ["Date", _pick_first(summary, ["date", "race_date", "日付"])],
@@ -95,7 +95,7 @@ def draw_page_1(
 
 
 def draw_page_2(c, rows: list[dict[str, str]], font_name: str) -> None:
-    y = draw_title(c, "2. Section Form Analysis Table", font_name)
+    y = draw_title(c, "2. 区間別フォーム指標（一覧）", font_name)
     candidates = ["section", "time_s", "avg_speed_mps", "pitch_hz", "stride_m", "trunk_tilt_deg", "knee_angle_deg"]
     headers = [h for h in candidates if rows and any((r.get(h) or "") for r in rows)]
     if not headers:
@@ -108,7 +108,7 @@ def draw_page_2(c, rows: list[dict[str, str]], font_name: str) -> None:
 
 
 def draw_page_3(c, stats: dict[str, float], data_rows: list[dict[str, str]], font_name: str) -> None:
-    y = draw_title(c, "3. Section Evaluation + Positive Summary", font_name)
+    y = draw_title(c, "3. 区間評価と今日の良かったポイント", font_name)
 
     pitch = stats.get("pitch_hz", math.nan)
     stride = stats.get("stride_m", math.nan)
@@ -184,7 +184,7 @@ def draw_page_3(c, stats: dict[str, float], data_rows: list[dict[str, str]], fon
 
 
 def draw_page_4(c, stats: dict[str, float], font_name: str) -> None:
-    y = draw_title(c, "4. Winter Training Suggestions", font_name)
+    y = draw_title(c, "4. 冬季トレーニング提案", font_name)
     lines = [
         "1) 加速ドリル（10〜20m×6本）：1本ごとにしっかり休んで、質を高く行いましょう。",
         "2) 補強トレーニング：ブルガリアンスクワット＋ヒップヒンジを週2〜3回行いましょう。",
