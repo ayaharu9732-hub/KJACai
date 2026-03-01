@@ -115,3 +115,5 @@ models/
 .ipynb_checkpoints/
 temp/
 tmp/
+# local fonts
+fonts/
