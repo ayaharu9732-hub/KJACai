@@ -5,7 +5,7 @@ from pathlib import Path
 from reportlab.pdfgen import canvas
 
 from src.kjac.report.layout import PAGE_SIZE, register_japanese_font
-from src.kjac.report.sections import draw_page_1, draw_page_2, draw_page_3, draw_page_4, load_metrics
+from src.kjac.report.sections import draw_page_1, draw_page_2, draw_page_3, draw_page_4, draw_page_5, load_metrics
 
 
 def build_report(metrics_csv: str | Path, output_pdf: str | Path) -> Path:
@@ -21,5 +21,6 @@ def build_report(metrics_csv: str | Path, output_pdf: str | Path) -> Path:
     draw_page_2(c, data_rows, font_name)
     draw_page_3(c, stats, data_rows, font_name)
     draw_page_4(c, stats, font_name)
+    draw_page_5(c, stats, data_rows, font_name)
     c.save()
     return out_path

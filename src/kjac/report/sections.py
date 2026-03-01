@@ -203,3 +203,72 @@ def draw_page_4(c, stats: dict[str, float], font_name: str) -> None:
     ]
     draw_lines(c, lines, y, font_name, size=11)
     c.showPage()
+
+
+def draw_page_5(c, stats: dict[str, float], data_rows: list[dict[str, str]], font_name: str) -> None:
+    y = draw_title(c, "5. 次の練習メニュー（1〜2週間）", font_name)
+
+    pitch = stats.get("pitch_hz", math.nan)
+    stride = stats.get("stride_m", math.nan)
+
+    lines: list[str] = [
+        f"現在の目安：ピッチ {_fmt(pitch)} / ストライド {_fmt(stride, 'm')}",
+        "",
+    ]
+
+    if not math.isnan(pitch) and pitch < 3.8:
+        lines += [
+            "【回転（ピッチ）を上げる】",
+            "- 20m加速走 × 6本（休息2〜3分、全力の85〜90%）",
+            "- その場もも上げ 20秒 × 4本（腕振りを速く、接地は短く）",
+            "- 合言葉：『小さく速く、リズム一定』",
+            "",
+        ]
+
+    if not math.isnan(stride) and stride < 1.45:
+        lines += [
+            "【押し出し（ストライド）】",
+            "- 坂ダッシュ 15m × 6本（休息2〜3分、前傾を保つ）",
+            "- バウンディング 20m × 4本（地面を後ろへ押す）",
+            "- 合言葉：『前に倒れて、後ろに強く押す』",
+            "",
+        ]
+
+    valid_rows: list[tuple[str, float]] = []
+    for row in data_rows:
+        section = (row.get("section", "") or "").strip()
+        speed = _to_float(row.get("avg_speed_mps"))
+        if section and not math.isnan(speed):
+            valid_rows.append((section, speed))
+
+    if valid_rows:
+        max_speed = max(s for _, s in valid_rows)
+        last_candidates = [
+            (sec, spd)
+            for sec, spd in valid_rows
+            if ("90" in sec) or ("goal" in sec.lower()) or ("ゴール" in sec)
+        ]
+        if last_candidates:
+            last_sec, last_speed = last_candidates[-1]
+            if max_speed > 0 and (last_speed / max_speed) < 0.93:
+                lines += [
+                    "【終盤の維持】",
+                    f"- 対象区間: {last_sec}（終盤）",
+                    "- フライング30m（20m助走+30m維持）× 4本（休息4分）",
+                    "- 120mテンポ走 × 3本（前半抑えて後半維持、休息5分）",
+                    "- 合言葉：『肩を上げない、接地を真下に』",
+                    "",
+                ]
+
+    lines += [
+        "【週の例（週2〜3回走練＋補強）】",
+        "- 1日目：加速走 + 技術ドリル（ピッチ/ストライド課題）",
+        "- 2日目：テンポ走 + 体幹・股関節補強",
+        "- 3日目：フォーム確認走（動画1〜2本）+ 軽い補強",
+        "",
+        "【安全メモ】",
+        "- 疲労や痛みが強い日は本数を減らし、フォームを優先しましょう。",
+    ]
+
+    draw_lines(c, lines, y, font_name, size=11, line_h=5.8 * mm)
+    c.showPage()
